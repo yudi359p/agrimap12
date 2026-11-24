@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriMap - Sistem Informasi Lahan Petani</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>🌱 AgriMap</h1>
+        <p>Sistem Informasi Pemetaan dan Analisis Lahan Pertanian</p>
+    </div>
+    <button id="logoutButton" class="btn-logout hidden" onclick="logout()">Keluar</button>
+</header>
+
+<!-- LOGIN -->
+<section id="loginPage" class="login-box">
+    <h2>Masuk AgriMap</h2>
+    <p>Silakan masuk menggunakan akun admin atau petani.</p>
+
+    <form id="loginForm">
+        <label for="loginId">Username</label>
+        <input type="text" id="loginId" placeholder="Masukkan username" required>
+
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="Masukkan password" required>
+
+        <button type="submit" class="btn-primary">Masuk</button>
+    </form>
+</section>
+
+<!-- DASHBOARD ADMIN -->
+<main id="adminPage" class="container hidden">
+    <h2 style="margin-bottom:20px">Dashboard Admin AgriMap</h2>
+
+    <div class="menu">
+        <button class="active" onclick="showAdminTab('data',this)">Data Petani</button>
+        <button onclick="showAdminTab('peta',this)">Peta Lahan</button>
+        <button onclick="showAdminTab('produksi',this)">Produksi & Keuangan</button>
+        <button onclick="showAdminTab('password',this)">Akun & Password Petani</button>
+    </div>
+
+    <!-- DATA PETANI -->
+    <section id="adminData">
+        <div class="stats">
+            <div class="stat"><h3 id="totalFarmers">0</h3><p>Total Petani</p></div>
+            <div class="stat"><h3 id="totalArea">0</h3><p>Total Luas Lahan (Ha)</p></div>
+            <div class="stat"><h3 id="totalCrops">0</h3><p>Jenis Komoditas</p></div>
+            <div class="stat"><h3 id="totalPlants">0</h3><p>Jumlah Tanaman</p></div>
+            <div class="stat"><h3 id="totalProduction">0</h3><p>Produksi Bulanan (Kg)</p></div>
+            <div class="stat"><h3 id="totalProfit">Rp0</h3><p>Total Laba Kotor/Bulan</p></div>
+        </div>
+
+        <div class="card">
+            <h2 id="formTitle">Tambah Data Petani</h2>
+            <p class="muted">Formulir untuk menambah atau memperbarui data petani.</p>
+
+            <form id="farmerForm">
+                <h3 class="subheading">A. Identitas dan Lahan</h3>
+
+                <div class="form-grid">
+                    <div><label for="newId">ID Anggota</label><input id="newId" required placeholder="PET-031"></div>
+                    <div><label for="newUsername">Username</label><input id="newUsername" required></div>
+                    <div><label for="newName">Nama Petani</label><input id="newName" required></div>
+                    <div><label for="newLocation">Wilayah Lahan</label><input id="newLocation" required></div>
+                    <div><label for="newArea">Luas Lahan (Ha)</label><input id="newArea" type="number" min="0.01" step="0.01" required></div>
+                    <div>
+                        <label for="newCrop">Jenis Komoditas</label>
+                        <select id="newCrop">
+                            <option>Pepaya</option>
+                            <option>Lainnya</option>
+                        </select>
+                    </div>
+                    <div><label for="newVariety">Varietas</label><input id="newVariety" required></div>
+                    <div><label for="newSpacing">Jarak Tanam</label><input id="newSpacing" required></div>
+                    <div><label for="newPlants">Jumlah Tanaman</label><input id="newPlants" type="number" min="0"></div>
+                    <div><label for="newAge">Umur Tanaman (Bulan)</label><input id="newAge" type="number" min="0"></div>
+                    <div><label for="newPlanting">Jadwal Tanam</label><input id="newPlanting"></div>
+                    <div><label for="newFirstHarvest">Panen Pertama</label><input id="newFirstHarvest"></div>
+                    <div><label for="newLastHarvest">Panen Terakhir</label><input id="newLastHarvest"></div>
+                    <div><label for="newSeedCost">Biaya Bibit (Rp)</label><input id="newSeedCost" type="number" min="0"></div>
+                    <div><label for="newPH">pH Tanah</label><input id="newPH" type="number" min="0" max="14" step="0.1"></div>
+                    <div>
+                        <label for="newPassword">Password Petani</label>
+                        <input id="newPassword" type="password">
+                        <small class="muted">Kosongkan saat edit jika tidak mengganti password.</small>
+                    </div>
+                </div>
+
+                <h3 class="subheading">B. Produksi dan Keuangan</h3>
+                <div class="form-grid">
+                    <div><label for="newProduction">Produksi/Bulan (Kg)</label><input id="newProduction" type="number" min="0"></div>
+                    <div><label for="newFrequency">Frekuensi Panen/Bulan</label><input id="newFrequency" type="number" min="0"></div>
+                    <div><label for="newPrice">Harga Jual/Kg (Rp)</label><input id="newPrice" type="number" min="0"></div>
+                    <div><label for="newHPP">HPP/Bulan (Rp)</label><input id="newHPP" type="number" min="0"></div>
+                    <div><label for="newProfit">Laba Kotor/Bulan (Rp)</label><input id="newProfit" type="number" min="0"></div>
+                    <div><label for="newPartner">Mitra Pemasaran</label><input id="newPartner"></div>
+                    <div>
+                        <label for="newStatus">Status</label>
+                        <select id="newStatus">
+                            <option>Aktif</option>
+                            <option>Nonaktif</option>
+                            <option>Persiapan Tanam</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h3 class="subheading">C. Koordinat Peta</h3>
+                <div class="form-grid">
+                    <div><label for="newLat">Latitude</label><input id="newLat" type="number" step="any"></div>
+                    <div><label for="newLng">Longitude</label><input id="newLng" type="number" step="any"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn-primary" type="submit" id="saveButton">Simpan Data</button>
+                    <button class="btn-danger hidden" type="button" id="cancelButton" onclick="resetForm()">Batal Edit</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Daftar Data Petani</h2>
+            <input class="search-box" id="searchFarmer" placeholder="Cari ID, nama, atau username...">
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Username</th><th>Nama Petani</th><th>Wilayah</th>
+                            <th>Luas (Ha)</th><th>Komoditas</th><th>Varietas</th>
+                            <th>Tanaman</th><th>Status</th><th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="farmerTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- PETA ADMIN -->
+    <section id="adminMap" class="hidden">
+        <div class="card">
+            <h2>Peta Lahan Seluruh Petani</h2>
+            <p class="muted">Peta petak berdasarkan data GeoJSON.</p>
+            <div id="mapAdmin" class="map-area"></div>
+            <div id="mapStatus" class="status">Menyiapkan peta...</div>
+            <div class="legend-list" id="adminLegend"></div>
+        </div>
+    </section>
+
+    <!-- PRODUKSI ADMIN -->
+    <section id="adminProduction" class="hidden">
+        <div class="chart-card">
+            <h2>📊 Grafik Omzet Bulanan Petani</h2>
+            <p class="muted">Perbandingan omzet berdasarkan produksi dan harga jual.</p>
+            <div class="chart-container"><canvas id="omzetChart"></canvas></div>
+
+            <div class="chart-summary">
+                <div class="chart-summary-item"><small>Total Omzet Seluruh Petani</small><h3 id="chartTotalOmzet">Rp0</h3></div>
+                <div class="chart-summary-item"><small>Omzet Tertinggi</small><h3 id="chartOmzetTertinggi">Rp0</h3><small id="chartNamaTertinggi">-</small></div>
+                <div class="chart-summary-item"><small>Rata-rata Omzet Petani</small><h3 id="chartRataOmzet">Rp0</h3></div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h2>📈 Grafik Laba Kotor Bulanan</h2>
+            <div class="chart-container"><canvas id="labaChart"></canvas></div>
+        </div>
+
+        <div class="card">
+            <h2>Rekap Produksi dan Keuangan Petani</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Petani</th><th>Produksi/Bulan</th><th>Frekuensi Panen</th>
+                            <th>Harga/Kg</th><th>HPP/Bulan</th><th>Laba Kotor/Bulan</th><th>Mitra</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productionTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- AKUN DAN PASSWORD -->
+    <section id="adminPassword" class="hidden">
+        <div class="card">
+            <h2>Manajemen Akun dan Password Petani</h2>
+            <p class="muted">Admin dapat mengelola username dan password akun petani.</p>
+            <br>
+            <input type="text" class="search-box" id="searchAccount" placeholder="Cari nama, ID, atau username...">
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Anggota</th><th>Nama Petani</th><th>Username</th>
+                            <th>Password Demo</th><th>Status</th><th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accountTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Informasi Akun Admin</h2>
+            <div class="info-grid">
+                <div class="info-item"><small>Username Admin</small><h3>admin</h3></div>
+                <div class="info-item"><small>Password Admin</small><h3>admin123</h3></div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- DASHBOARD PETANI -->
+<main id="farmerPage" class="container hidden">
+    <h2 style="margin-bottom:20px">Dashboard Petani</h2>
+
+    <div class="card">
+        <h2 id="welcomeName">Selamat Datang</h2>
+        <p>Berikut informasi lahan dan usaha tani Anda.</p>
+    </div>
+
+    <div class="menu">
+        <button class="active" onclick="showFarmerTab('profil',this)">Data Lahan</button>
+        <button onclick="showFarmerTab('budidaya',this)">Budidaya</button>
+        <button onclick="showFarmerTab('keuangan',this)">Produksi & Keuangan</button>
+        <button onclick="showFarmerTab('peta',this)">Peta Lahan</button>
+        <button onclick="showFarmerTab('analisis',this)">Analisis</button>
+        <button onclick="showFarmerTab('solusi',this)">Solusi Pertanian</button>
+    </div>
+
+    <section id="farmerProfil">
+        <div class="card">
+            <h2>Identitas dan Informasi Lahan</h2>
+            <div class="info-grid" id="farmerDetails"></div>
+        </div>
+    </section>
+
+    <section id="farmerBudidaya" class="hidden">
+        <div class="card">
+            <h2>Informasi Budidaya</h2>
+            <div class="info-grid" id="cultivationDetails"></div>
+        </div>
+    </section>
+
+    <section id="farmerKeuangan" class="hidden">
+        <div class="card">
+            <h2>Produksi dan Keuangan</h2>
+            <div class="stats">
+                <div class="stat"><h3 id="myProduction">0</h3><p>Produksi/Bulan (Kg)</p></div>
+                <div class="stat"><h3 id="myHPP">Rp0</h3><p>HPP/Bulan</p></div>
+                <div class="stat"><h3 id="myProfit">Rp0</h3><p>Laba Kotor/Bulan</p></div>
+            </div>
+            <div class="info-grid" id="financialDetails"></div>
+        </div>
+    </section>
+
+    <section id="farmerPeta" class="hidden">
+        <div class="card">
+            <h2>Lokasi Lahan Saya</h2>
+            <div id="mapFarmer" class="map-area"></div>
+            <div id="farmerMapStatus" class="status">Menyiapkan peta...</div>
+        </div>
+    </section>
+
+    <section id="farmerAnalisis" class="hidden">
+        <div class="card">
+            <h2>Analisis Lahan Pertanian</h2>
+            <p class="muted">Analisis awal berdasarkan informasi yang tersedia.</p>
+            <div id="analysisContent" style="margin-top:18px"></div>
+        </div>
+    </section>
+
+    <section id="farmerSolusi" class="hidden">
+        <div class="card">
+            <h2>Rekomendasi Pertanian</h2>
+            <div id="solutionContent" style="margin-top:18px"></div>
+        </div>
+    </section>
+</main>
+
+<footer>AgriMap © 2026 | Sistem Informasi Pertanian</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
